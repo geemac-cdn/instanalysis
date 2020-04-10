@@ -11,7 +11,7 @@ import os
 
 class IG360Scrape:
 
-    def __init__(self, config, username=None, password=None):
+    def __init__(self, config, username="", password=""):
 
         """
         Creates an instance of IG360Scrape class
@@ -24,9 +24,15 @@ class IG360Scrape:
 
         """      
        
-        # copy arguments
-        self.username = username
-        self.password = password
+        print ("User: {}".format(username))
+
+        # set user name and password
+        if (len(username) > 0):
+            self.username = username
+            self.password = password
+        else:
+            self.username = config['IG_AUTH']['USERNAME']
+            self.password = config['IG_AUTH']['PASSWORD']
         
         # set other attributes
         self.code_version = 0.85
@@ -62,28 +68,6 @@ class IG360Scrape:
         input_user.send_keys(self.username)
         input_pass.send_keys(self.password)
         btn_login.click()
-
-
-    def infinite_scroll(self):
-        """
-        Scrolls to the bottom of a user's page to load all of the their media
-        Originally written by John Fisher
-
-        Returns:
-            bool: True if the bottom of the page has been reached, else false
-        """
-        SCROLL_PAUSE_TIME = 1
-        self.last_height = self.driver.execute_script("return document.body.scrollHeight")
-        self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(SCROLL_PAUSE_TIME)
-        self.new_height = self.driver.execute_script("return document.body.scrollHeight")
-
-        if self.new_height == self.last_height:
-            return True
-        
-        self.last_height = self.new_height
-        return False
-
 
     def inifinite_expand_comments(self):
         """
@@ -139,7 +123,7 @@ class IG360Scrape:
             else:
                 prev_list_len = len(popup_list)
 
-
+       
 
     @insta_method
     def nav_user(self, user):
@@ -348,35 +332,51 @@ class IG360Scrape:
 
     @insta_method
     def scrape_post_list(self, user, max_pics):
+        """
+        Scrape links to posts from a user's profile page
+        Arguments:
+        Returns:
+            list: all the items that can be found in the pop up window 
+        """
 
         #navigate to user's profile page
         self.nav_user(user)
 
-        #get list of posts
-        posts = []
+        post_list = []
         finished = False
-
-        #capture post links until no posts left or limit reached
+        prev_list_len = 0
         while not finished:
-            #scroll down / check if no posts left
-            finished = self.infinite_scroll()
-            time.sleep(3)
-            
-            #extract url or every post visible
-            #imgs = self.driver.find_elements_by_class_name('v1Nh3 kIKUG  _bz0w')
-            imgs = self.driver.find_elements_by_xpath("//div[@class='v1Nh3 kIKUG  _bz0w']/a")
-            posts.extend(img.get_attribute('href') for img in imgs)
+            # scroll down
+            self.driver.find_element_by_tag_name("html").send_keys(Keys.END)
+            time.sleep(randint(3,8))
 
-            # clean up duplicates
-            posts = list(set(posts))
+            # extract target elements within views, add to list
+            imgs = self.driver.find_elements_by_xpath("//div[@class='v1Nh3 kIKUG  _bz0w']")
+            for img in imgs:
+                specialPix = img.find_elements_by_class_name("u7YqG")
+                if (len(specialPix) == 0):
+                    txtNewURL = img.find_element_by_tag_name("a").get_attribute('href')
+                    if txtNewURL not in post_list:
+                        post_list.append(txtNewURL)
+                else:
+                    if (specialPix[0].find_element_by_tag_name("span").get_attribute('aria-label') in ['IGTV','Video']) == False:
+                        #print("Not bad Sub-Element:  Dump: {}".format(img))
+                        txtNewURL = img.find_element_by_tag_name("a").get_attribute('href')
+                        if txtNewURL not in post_list:
+                            post_list.append(txtNewURL)
 
-            # check if limit reached
+            # check if done / refresh
+            if len(post_list) > max_pics:
+                finished = True
             if finished == False:
-                finished = (len(posts) >= max_pics)
+                if len(post_list) == prev_list_len:
+                    finished = True
+                    return post_list
+                else:
+                    prev_list_len = len(post_list)
 
         # update post list record
-        self.record_post_list = posts[:max_pics]
-
+        self.record_post_list = post_list[:max_pics]
 
 
 
@@ -389,19 +389,19 @@ if __name__ == '__main__':
     config_file_path = 'config.ini'
     config = init_config(config_file_path)
     # login
-    scraper = IG360Scrape(config,'xx','xx')
+    #scraper = IG360Scrape(config)
     #scraper.login()
 
     # scrape a profile
-    scraper.scrape_profile("alsaydali")
-    print(scraper.record_profile)
+    #scraper.scrape_profile("alsaydali")
+    #print(scraper.record_profile)
 
     # scrape a post
     #scraper.scrape_post('B9ZPklXht6f')
     #print(scraper.record_post)
 
     # get list of posts to process
-    #scraper.scrape_post_list("alsaydali", 35)
+    #scraper.scrape_post_list("tonyrobbins", 2)
     #print("Posts Found: {}".format(scraper.record_post_list))
     #print("Num Posts: {}".format(len(scraper.record_post_list)))
 

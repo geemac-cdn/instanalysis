@@ -1,0 +1,4 @@
+#ignore all configuration files
+*.ini
+#ignore the output folder
+_output/*.*
