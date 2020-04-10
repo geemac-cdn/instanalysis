@@ -12,8 +12,8 @@ If you are using a Linux desktop, use these instructions to setup a vitual machi
 https://www.groovypost.com/howto/windows-10-install-virtualbox/
 ```
 A Python 3.x development environment
+(Anaconda is highly recommended and will be referenced for the rest of this document)
 ```
-Anaconda is highly recommended and will be referenced for the rest of this document
 https://www.anaconda.com/
 ```
 Google Chrome
@@ -21,7 +21,8 @@ Google Chrome
 https://www.google.com/chrome/
 ```
 ChromeDriver - WebDriver for Chrome
-```
-https://chromedriver.chromium.org/downloads
 Important: ensure the version you download matches your version of chrome (for example, If you are using Chrome version 81, please download ChromeDriver 81.0.4044.69) 
 ```
+https://chromedriver.chromium.org/downloads
+```
+(optional) A VPN service
