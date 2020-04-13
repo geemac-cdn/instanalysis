@@ -53,9 +53,10 @@ Update the configuration in the first cell as required -
   <li>txt_dir_output - This is where the JSON files will be output.  Either change this value to match an existing sub-folder or create a sub-folder to match the default value</li?
   <li>user_login - Uncomment this line and fill it with your Instagram login name</li>
   <li>user_password - Uncomment this line and fill it with your Instagram password</li>
-  <li>tgt_user - This is the Instagram user that you will extract information from.  Keep the default value or enter an account name you wish to extract.  Remember that you must use the account name (e.g."tonyrobbins") instead of the account's full name (e.g. "Tony Robbins"). If you don't use the default, select an account with not too many followers (<500) so the demo runs reasonably fast</li>
+  <li>tgt_user - This is the Instagram user that you will extract information from.  Replace the default name (now defunct) with an account you wish to extract.  If you need a easy and small account, try "worldofbenches".  Remember that you must use the account name (e.g."tonyrobbins") instead of the account's full name (e.g. "Tony Robbins").</li>
   <li>num_posts - If you change the default, ensure it is an integer valus greater than or equal to 1</li>
 </ul>
+In the second cell, uncomment the first line and comment the second line (this will force the program to use the login name and password you supply, rather than defaulting to the config.ini file)
 Run the entire notebook.  You should see the following
 <ol>
   <li>A Chrome window opens on the login screen</li>
@@ -63,6 +64,25 @@ Run the entire notebook.  You should see the following
   <li>Browser navigates to the profile page of the account you selected</li>
   <li>Pop up windows open for both users followed and users following.  In both cases, the pop up window periodically scrolls until it reaches the bottom then closes (this step will by far take the longest time)</li>
   <li>Profile page starts scrolling, revealing more post thumbnails</li>
-  <li>The Chrome window closes</li>
+  <li>The notebook completes and displays the filename for the output file</li>
 </ol>
 Check the output directory you defined.  A JSON file should be generated.  Open the file in a text editor and you should see JSON code describing the target account, their followers, users they are following and a list of URL's for their most recent posts.
+
+## Built With
+<ol>
+  <li>Jupyter Lab</li>
+  <li>Visual Studio Code</li>
+  <li><Selenium/li>
+</ol>
+
+## To Do List
+<ol>
+  <li>Add notebooks to analyze JSON output (currently testing in Databricks.  Please message me if you'd like it now)</li>
+  <li>Create notebook for end-to-end workflow (data extraction, analysis, output) </li>
+  <li>Move JSON-generation code to utility includes</li>
+  <li>Add processing for videos (currently they are skipped)</li>
+</ol>
+
+
+## Other Notes
+See FAQ.md
