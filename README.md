@@ -72,7 +72,7 @@ Check the output directory you defined.  A JSON file should be generated.  Open 
 <ol>
   <li>Jupyter Lab</li>
   <li>Visual Studio Code</li>
-  <li><Selenium</li>
+  <li>Selenium</li>
 </ol>
 
 ## To Do List
