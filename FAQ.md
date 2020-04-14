@@ -58,7 +58,7 @@ display(df_fp.head(5))
 The post files contain nested JSON data and require a little more processing -
 
 ```
-fn_ps = '(put your ps JSON filename here)'
+fn_ps = 'ps_miikanajewels_202004072122.json'
 
 from pyspark.sql.functions import col, explode, from_json, length, substring
 from pyspark.sql.functions import monotonically_increasing_id, get_json_object, when, expr
@@ -72,12 +72,12 @@ df_raw_posts = df_ps \
   .withColumn("row_id", monotonically_increasing_id()) \
   .withColumn("posts3", when(col("row_id")==0, col("posts2")).otherwise( expr("substring(posts2, 2, length(posts2)-2)") )) \
   .select(get_json_object(col("posts3"), "$.picture_id").alias("picture_id"),
-  get_json_object(col("posts3"), "$.post_date").cast(TimestampType()).alias("post_dt"),
-  get_json_object(col("posts3"), "$.poster").alias("poster"),
-  get_json_object(col("posts3"), "$.location").alias("location"),
-  get_json_object(col("posts3"), "$.likes").cast(IntegerType()).alias("likes"),
-  get_json_object(col("posts3"), "$.post").alias("post"),
-  get_json_object(col("posts3"), "$.like_list").alias("like_list")
+    get_json_object(col("posts3"), "$.post_date").cast(TimestampType()).alias("post_dt"),
+    get_json_object(col("posts3"), "$.poster").alias("poster"),
+    get_json_object(col("posts3"), "$.location").alias("location"),
+    get_json_object(col("posts3"), "$.likes").cast(IntegerType()).alias("likes"),
+    get_json_object(col("posts3"), "$.post").alias("post"),
+    get_json_object(col("posts3"), "$.like_list").alias("like_list")
   )
 display(df_raw_posts.head(5))
 ```
