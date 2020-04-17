@@ -3,6 +3,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from .utility_methods.utility_methods import *
+from .utility_methods.json_methods import *
 from random import randint
 import pandas as pd
 
@@ -23,8 +24,6 @@ class IG360Scrape:
         Attributes:
 
         """      
-       
-        print ("User: {}".format(username))
 
         # set user name and password
         if (len(username) > 0):
@@ -105,24 +104,20 @@ class IG360Scrape:
             time.sleep(randint(1,3))
             self.driver.find_element_by_tag_name("html").send_keys(Keys.END)
             time.sleep(randint(3,8))
-            #print("Checkpoint: End Key Pressed")
 
             # extract target elements within views, add to list
             new_elements = self.driver.find_elements_by_xpath("//{}[@class='{}']".format(scrape_element, scrape_class))
             popup_list.extend(i.text for i in new_elements)
-            #print("Checkpoint: Scanning {} elements".format(len(new_elements)))
 
             # de-duplicate target list
             popup_list = list(set(popup_list))
-            #print("Checkpoint: Paired list down to {} elements".format(len(popup_list)))
-
+ 
             # check if done / refresh
             if len(popup_list) == prev_list_len:
                 finished = True
                 return popup_list
             else:
                 prev_list_len = len(popup_list)
-
        
 
     @insta_method
@@ -161,7 +156,6 @@ class IG360Scrape:
         self.nav_user(user)
         self.driver.find_element_by_xpath("//a[@class='-nal3 ']").click()
         time.sleep(randint(3,6))
-        #print("Clicked the followers link")
 
         # capture full list of followers from pop-up window
         scroll_class1 = '_7UhW9   xLCgt      MMzan   _0PwGv           fDxYl     '
@@ -172,6 +166,7 @@ class IG360Scrape:
 
         # update profile record
         self.record_follower_list = ext_followers
+
 
     @insta_method
     def scrape_following(self, user):
@@ -185,7 +180,6 @@ class IG360Scrape:
         self.nav_user(user)
         self.driver.find_elements_by_xpath("//a[@class='-nal3 ']")[1].click()
         time.sleep(randint(3,6))
-        print("Clicked the followers link")
 
         # capture full list of followers from pop-up window
         scroll_class1 = '_7UhW9   xLCgt      MMzan   _0PwGv           fDxYl     '
@@ -195,8 +189,7 @@ class IG360Scrape:
         ext_following = self.pop_scrape(scroll_class1, scroll_class2, scrape_element, scrape_class)
 
         # update profile record
-        self.record_following_list = ext_following
-    
+        self.record_following_list = ext_following  
 
 
     @insta_method
@@ -301,17 +294,14 @@ class IG360Scrape:
                 time.sleep(1)
                 self.driver.find_element_by_tag_name("html").send_keys(Keys.END)
                 time.sleep(3)
-                #print("Checkpoint: End Key Pressed")
                 
                 #extract name for every like visible
                 likepack = self.driver.find_elements_by_xpath("//div[@class='                   Igw0E   rBNOH        eGOV_     ybXk5    _4EzTm                                                                                                              ']")
                 ext_like_list.extend(liker.text for liker in likepack)
-                #print("Checkpoint: Scanning {} elements".format(len(likepack)))
 
                 # clean up duplicates
                 ext_like_list = list(set(ext_like_list))
-                #print("Checkpoint: Paired list down to {} elements".format(len(ext_like_list)))
-
+ 
                 # check if done / refresh
                 if len(ext_like_list) == cnt_prev_list_len:
                     finished = True
@@ -360,7 +350,6 @@ class IG360Scrape:
                         post_list.append(txtNewURL)
                 else:
                     if (specialPix[0].find_element_by_tag_name("span").get_attribute('aria-label') in ['IGTV','Video']) == False:
-                        #print("Not bad Sub-Element:  Dump: {}".format(img))
                         txtNewURL = img.find_element_by_tag_name("a").get_attribute('href')
                         if txtNewURL not in post_list:
                             post_list.append(txtNewURL)
@@ -377,6 +366,45 @@ class IG360Scrape:
 
         # update post list record
         self.record_post_list = post_list[:max_pics]
+
+
+    def json_write_fp(self, tgt_user, dir_output):
+        """
+        Description
+
+        Args:
+            x:int: desc
+            x:int: desc
+            x:int: desc
+            x:int: desc
+            x:int: desc
+            x:int: desc
+            x:int: desc
+
+        Returns:
+            x:success: Whether the file was successfully written
+        """
+        return util_json_write_fp(tgt_user, dir_output, self.record_follower_list, self.record_following_list, self.record_post_list, self.code_version, self.record_profile)
+ 
+
+    def json_write_ps(self, tgt_user, dir_output, src_fp_file, post_data):
+        """
+        Description
+
+        Args:
+            x:int: desc
+            x:int: desc
+            x:int: desc
+            x:int: desc
+            x:int: desc
+            x:int: desc
+            x:int: desc
+
+        Returns:
+            x:success: Whether the file was successfully written
+        """
+        return util_json_write_ps(tgt_user, dir_output, src_fp_file, post_data, self.code_version)
+       
 
 
 
