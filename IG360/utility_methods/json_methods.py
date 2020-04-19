@@ -5,24 +5,25 @@ import re
 from pathlib import Path
 
 
-
 def util_json_write_fp(tgt_user, dir_output, record_follower_list, record_following_list, record_post_list, code_version, record_profile):
-    """
-    Description
+    """Utility Function: Write standardized Full Profile (FP) file
+
+    This is a utility function, meant to be called by the instance method json_write_fp.
+    Write standardized Full Profile (FP) file.  JSON file will output the following (previously extracted) information -
+        -Base information (number of posts, full name, etc)
+        -Accounts following target account
+        -Accounts that target account follows
+        -URL's for target account's most recent posts
 
     Args:
-        x:int: desc
-        x:int: desc
-        x:int: desc
-        x:int: desc
-        x:int: desc
-        x:int: desc
-        x:int: desc
-
-    Returns:
-        x:success: Whether the file was successfully written
+        tgt_user (str): Instagram target account user name
+        dir_output (str): Output directory for JSON files
+        record_follower_list (list[str]): IG360 instance variable.  Instagram accounts following the target account
+        record_following_list (list[str]): IG360 instance variable.  Instagram accounts being followed by the target account
+        record_post_list (list[str]): IG360 instance variable.  Most recent posts by the target account
+        code_version (float): IG360 instance variable.  Code version.
+        record_profile (dict): IG360 instance variable.  Dictionary of profile 
     """
-
     if Path.exists(dir_output):
         # combine follow lists into single dictionary
         dict_lists = {
@@ -57,22 +58,19 @@ def util_json_write_fp(tgt_user, dir_output, record_follower_list, record_follow
 
 
 def util_json_write_ps(tgt_user, dir_output, src_fp_file, post_data, code_version):
-    """
-    Description
+    """Utility Function: Write standardized Post Details (PS) file
+
+    This is a utility function, meant to be called by the instance method util_json_write_ps.
+    Write standardized Post Details (PS) file.  JSON file will output the following (previously extracted) information -
+        -Post contents, comments, list of likers
 
     Args:
-        x:int: desc
-        x:int: desc
-        x:int: desc
-        x:int: desc
-        x:int: desc
-        x:int: desc
-        x:int: desc
-
-    Returns:
-        x:success: Whether the file was successfully written
+        tgt_user (str): Instagram target account user name
+        dir_output (str): Output directory for JSON files
+        src_fp_file (str): Filename for Standardized Profile (FP) file.  Assumed to be located in directory specified by dir_output
+        post_data (str): List of instagram post data (as extracted with the scrape_post method)
+        code_version (float): IG360 instance variable.  Code version
     """
-
     # create output header
     if Path.exists(dir_output):
         dt_run = datetime.datetime.now()

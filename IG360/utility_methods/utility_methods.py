@@ -7,9 +7,8 @@ def init_config(config_file_path):
     Initializes the configuration
 
     Args:
-        config_file_path:str: Path to .ini configuration file
+        config_file_path (str): Path to .ini configuration file
     """
-
     # assert config file has the correct extension
     path = config_file_path.split('.')
     assert(path[len(path)-1] == 'ini')
@@ -26,10 +25,10 @@ def insta_method(func):
     that interact with Instagram
 
     Args:
-        func:function: Function to wrap
+        func (function): Function to wrap
 
     Returns:
-        wrapper:function: Wrapper function
+        wrapper (function): Wrapper function
     """
     @functools.wraps(func)
     def wrapper(*args, **kwargs):

@@ -55,7 +55,7 @@ Update the configuration in the first cell as required -
   <li><b>txt_dir_output</b> - This is where the JSON files will be output.  Either change this value to match an existing sub-folder or create a sub-folder to match the default value</li>
   <li><b>user_login</b> - Uncomment this line and fill it with your Instagram login name</li>
   <li><b>user_password</b> - Uncomment this line and fill it with your Instagram password</li>
-  <li><b>tgt_user</b> - This is the Instagram user that you will extract information from.  Replace the default name (now defunct) with an account you wish to extract.  If you need a sample account, try "worldofbenches".  Remember that you must use the account name (e.g."johnsmith12345") instead of the account's full name (e.g. "John Smith").</li>
+  <li><b>tgt_user</b> - This is the Instagram user that you will extract information from.  Replace the default name (a seemingly dormant account) with an account you wish to extract.  Remember that you must use the account name (e.g."johnsmith12345") instead of the account's full name (e.g. "John Smith").</li>
   <li><b>num_posts</b> - If you change the default, ensure it is an integer value greater than or equal to 1</li>
 </ul>
 In the second cell, uncomment the first line and comment the second line (this will force the program to use the login name and password you supply, rather than defaulting to the config.ini file)
@@ -80,7 +80,6 @@ Check the output directory you defined.  A JSON file should be generated.  Open 
 <ol>
   <li>Add notebooks to analyze JSON output (currently testing in Databricks.  Please message me if you'd like it now)</li>
   <li>Create notebook for end-to-end workflow (data extraction, analysis, output) </li>
-  <li>Move JSON-generation code to utility includes</li>
   <li>Add processing for videos (currently they are skipped)</li>
 </ol>
 

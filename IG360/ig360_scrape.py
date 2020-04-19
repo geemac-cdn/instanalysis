@@ -1,5 +1,3 @@
-
-
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from .utility_methods.utility_methods import *
@@ -13,18 +11,16 @@ import os
 class IG360Scrape:
 
     def __init__(self, config, username="", password=""):
+        """Creates an instance of the IG360 Scrape class
 
-        """
-        Creates an instance of IG360Scrape class
+        Creates an instance of the IG360 Scrape class.  IG360 uses Selenium and Google Chrome to login to 
+        Instagram, collect profile/post/follower data and output as JSON data
 
         Args:
-            username:str: The username of the Instagram user
-            password:str: The password of the Instagram user
-
-        Attributes:
-
-        """      
-
+            config (str): Location of the configuration file (config.ini)
+            username (str): Instagram account login.  If not specified then value in config.ini is used
+            password (str): Instagram account password.  If not specified then value in config.ini is used
+        """
         # set user name and password
         if (len(username) > 0):
             self.username = username
@@ -46,13 +42,13 @@ class IG360Scrape:
         self.record_post_list = []
         self.record_follower_list = []
         self.record_following_list = []
-
         
 
     @insta_method
     def login(self):
-        """
-        Logs a user into Instagram via the web portal
+        """Logs into Instagram
+
+        Logs into Instgram using the credentials specified when the IG360 object was created
         """
         # open url
         self.driver.get(self.url_login)
@@ -68,13 +64,15 @@ class IG360Scrape:
         input_pass.send_keys(self.password)
         btn_login.click()
 
-    def inifinite_expand_comments(self):
-        """
-        Expands the comment section of a post so that more
-        posts can be scraped
+
+    def __inifinite_expand_comments(self):
+        """Expand the comment section of a post
+
+        Expands the comment section of a post so that more posts can be scraped.
+        This is an internal routine, meant to be called by other routines
 
         Returns:
-            bool: True if there are no more comments to expand, else false
+            bool: True if there are no more comments to expand, else false   
         """
         btn_exp = self.driver.find_elements_by_xpath("//button[@class='dCJp8 afkep']")
 
@@ -84,16 +82,20 @@ class IG360Scrape:
             
         return True
 
-    def pop_scrape(self, scroll_class1, scroll_class2, scrape_element, scrape_class):
-        """
-        Scrape all items from an Instagram pop up window
-        Arguments:
-            scroll_class1:str: Primary class name within element to be targeted for scrolling
-            scroll_class2:str: Secondary class name within element to be targeted for scrolling
-            scrape_element:str: HTML element type to be targeted for scraping
-            scrape_class:str: Class name within element to be targeted for scraping
+
+    def __pop_scrape(self, scroll_class1, scroll_class2, scrape_element, scrape_class):
+        """Scrape all html elements of a specified class from an Instagram pop up window
+
+        Scrape all html elements of a specified class from an Instagram pop up window. Designed to be used with followers or users followed.
+
+        Args:
+            scroll_class1 (str): Primary class name within element to be targeted for scrolling
+            scroll_class2 (str): Secondary class name within element to be targeted for scrolling
+            scrape_element (str): HTML element type to be targeted for scraping
+            scrape_class (str): Class name within element to be targeted for scraping
+
         Returns:
-            list: all the items (as defined by input class) that can be found in the pop up window
+            list: all the items (as defined by input class) that can be found in the pop up window   
         """
         popup_list = []
         finished = False
@@ -121,24 +123,26 @@ class IG360Scrape:
        
 
     @insta_method
-    def nav_user(self, user):
-        """
-        Navigate to a user's profile page
+    def __nav_user(self, user):
+        """Navigate to a user's profile page
 
-        Arguments:
-            user:str: Instagram account user name
+        Navigate to a user's profile page. 
+
+        Args:
+            user (str): Instagram account user name
         """
         self.driver.get(self.url_user.format(user))
         time.sleep(randint(5,8))
 
 
     @insta_method
-    def nav_post(self, picture_id):
-        """
-        Navigate to a post page
+    def __nav_post(self, picture_id):
+        """Navigate to a post page
 
-        Arguments:
-            picture_id:str: Intagram Post ID
+       Navigate to a post page
+
+        Args:
+            picture_id (str): Intagram Post ID
         """
         self.driver.get(self.url_post.format(picture_id))
         time.sleep(randint(3,5))
@@ -146,14 +150,15 @@ class IG360Scrape:
 
     @insta_method
     def scrape_followers(self, user):
-        """
+        """Get list of followers for a specified user
+
         Get list of followers for a specified user
 
-        Arguments:
-            user:str: Instagram account user name
+        Args:
+            user (str): Instagram account user name
         """
         # navigate to user's profile page, click on followers link
-        self.nav_user(user)
+        self.__nav_user(user)
         self.driver.find_element_by_xpath("//a[@class='-nal3 ']").click()
         time.sleep(randint(3,6))
 
@@ -162,7 +167,7 @@ class IG360Scrape:
         scroll_class2 = 'wFPL8 '
         scrape_element = 'a'
         scrape_class = 'FPmhX notranslate  _0imsa '
-        ext_followers = self.pop_scrape(scroll_class1, scroll_class2, scrape_element, scrape_class)
+        ext_followers = self.__pop_scrape(scroll_class1, scroll_class2, scrape_element, scrape_class)
 
         # update profile record
         self.record_follower_list = ext_followers
@@ -170,14 +175,15 @@ class IG360Scrape:
 
     @insta_method
     def scrape_following(self, user):
-        """
+        """Get list of accounts a specified user is following
+
         Get list of accounts a specified user is following
 
-        Arguments:
-            user:str: Instagram account user name
+        Args:
+            user (str): Instagram account user name
         """
         # navigate to user's profile page, click on followers link
-        self.nav_user(user)
+        self.__nav_user(user)
         self.driver.find_elements_by_xpath("//a[@class='-nal3 ']")[1].click()
         time.sleep(randint(3,6))
 
@@ -186,7 +192,7 @@ class IG360Scrape:
         scroll_class2 = 'wFPL8 '
         scrape_element = 'a'
         scrape_class = 'FPmhX notranslate  _0imsa '
-        ext_following = self.pop_scrape(scroll_class1, scroll_class2, scrape_element, scrape_class)
+        ext_following = self.__pop_scrape(scroll_class1, scroll_class2, scrape_element, scrape_class)
 
         # update profile record
         self.record_following_list = ext_following  
@@ -194,15 +200,15 @@ class IG360Scrape:
 
     @insta_method
     def scrape_profile(self, user):
-        """
+        """Get profile for a specified user
+
         Get profile for a specified user
 
-        Arguments:
-            user:str: Instagram account user name
-
+        Args:
+            user (str): Instagram account user name
         """
         # navigate to user's profile page
-        self.nav_user(user)
+        self.__nav_user(user)
         
         # find elements
         txt_user_name = self.driver.find_element_by_xpath('//h2[@class="_7UhW9       fKFbl yUEEX   KV-D4            fDxYl     "]')
@@ -236,20 +242,20 @@ class IG360Scrape:
 
     @insta_method
     def scrape_post(self, picture_id):
-        """
+        """Extract details of an instagram post
+
         Extract details of an instagram post
 
-        Arguments:
-            url_post:str: URL to direct instagram post
-        """
-
+        Args:
+            url_post (str): URL to direct instagram post
+        """       
         # navigate to post URL
-        self.nav_post(picture_id)
+        self.__nav_post(picture_id)
 
         # expand to see all comments
         ind_all_comments = False
         while ind_all_comments == False:
-            ind_all_comments = self.inifinite_expand_comments()
+            ind_all_comments = self.__inifinite_expand_comments()
             time.sleep(3)
 
         # find main post elements
@@ -322,15 +328,16 @@ class IG360Scrape:
 
     @insta_method
     def scrape_post_list(self, user, max_pics):
-        """
-        Scrape links to posts from a user's profile page
-        Arguments:
-        Returns:
-            list: all the items that can be found in the pop up window 
-        """
+        """Extracts URLs for most recent posts on an IG user's home page
 
+        Extracts URLs for most recent posts on an IG user's home page
+
+        Args:
+            user (str): Instagram account user name
+            max_pics (int): Maximum number of URL's 
+        """
         #navigate to user's profile page
-        self.nav_user(user)
+        self.__nav_user(user)
 
         post_list = []
         finished = False
@@ -369,39 +376,32 @@ class IG360Scrape:
 
 
     def json_write_fp(self, tgt_user, dir_output):
-        """
-        Description
+        """Write standardized Full Profile (FP) file
+
+        Write standardized Full Profile (FP) file.  JSON file will output the following (previously extracted) information -
+            -Base information (number of posts, full name, etc)
+            -Accounts following target account
+            -Accounts that target account follows
+            -URL's for target account's most recent posts
 
         Args:
-            x:int: desc
-            x:int: desc
-            x:int: desc
-            x:int: desc
-            x:int: desc
-            x:int: desc
-            x:int: desc
-
-        Returns:
-            x:success: Whether the file was successfully written
+            tgt_user (str): Instagram target account user name
+            dir_output (str): Output directory for JSON files
         """
         return util_json_write_fp(tgt_user, dir_output, self.record_follower_list, self.record_following_list, self.record_post_list, self.code_version, self.record_profile)
  
 
     def json_write_ps(self, tgt_user, dir_output, src_fp_file, post_data):
-        """
-        Description
+        """Write standardized Post Details (PS) file
+
+        Write standardized Post Details (PS) file.  JSON file will output the following (previously extracted) information -
+            -Post contents, comments, list of likers
 
         Args:
-            x:int: desc
-            x:int: desc
-            x:int: desc
-            x:int: desc
-            x:int: desc
-            x:int: desc
-            x:int: desc
-
-        Returns:
-            x:success: Whether the file was successfully written
+            tgt_user (str): Instagram target account user name
+            dir_output (str): Output directory for JSON files
+            src_fp_file (str): Filename for Standardized Profile (FP) file.  Assumed to be located in directory specified by dir_output
+            post_data (str): List of instagram post data (as extracted with the scrape_post method)
         """
         return util_json_write_ps(tgt_user, dir_output, src_fp_file, post_data, self.code_version)
        
