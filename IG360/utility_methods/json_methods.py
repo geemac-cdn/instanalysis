@@ -95,3 +95,54 @@ def util_json_write_ps(tgt_user, dir_output, src_fp_file, post_data, code_versio
 
     else:
            return [False,""]
+
+
+def util_json_write_mp(tgt_user, dir_output, code_version, profiles):
+    """Utility Function: Write standardized Multi-Profile (MP) file
+
+    This is a utility function, meant to be called by the instance method json_write_fp.
+    Write standardized Multi-Profile (MP) file.  JSON file will output the following (previously extracted) information -
+        -Base profile data (user name, verification status, numer of posts, number of followers, number followed, full name, description)
+        -Date of user's most recent post
+
+    Args:
+        tgt_user (str): Instagram target account user name
+        dir_output (str): Output directory for JSON files
+        code_version (float): IG360 instance variable.  Code version
+        profiles (list): Profile data records.  (previously extracted) Fields should be as follows -
+            user_name (str)
+            ind_verified (int) 
+            num_posts (int)
+            num_followers (int)
+            num_following (int)
+            full_name (string)
+            description (string)
+            dt_last_post (string: '%Y-%m-%dT%H:%M:%SZ')
+    """
+    # assemble multi-profile data
+    profile_data = []
+    for profile in profiles:
+        key_fields = ['user_name', 'ind_verified', 'num_posts', 'num_followers', 'num_following', 'full_name', 'description', 'dt_last_post']
+        new_dict_record = dict(zip(key_fields,profile))
+        profile_data.append(new_dict_record)
+    dict_profiles = {
+        "profiles" : profile_data
+    }
+
+    # create header dictionary
+    dt_run = datetime.datetime.now()
+    dict_header = {
+        "run_datetime" : dt_run.strftime('%Y-%m-%dT%H:%M:%SZ'),
+        "ig_record_type" : "mp",
+        "code_version" : code_version
+    }
+
+    # combine all dictionaries
+    dict_final = {**dict_header, **dict_profiles}
+
+    # output as JSON
+    fn_out = re.sub(r'[\W]','',dict_header["ig_record_type"]) + '_' + tgt_user + '_' \
+        + str(dt_run.year) + str(dt_run.month).zfill(2) + str(dt_run.day).zfill(2) + str(dt_run.hour).zfill(2) + str(dt_run.minute).zfill(2) + '.json'
+    fn_out_full = dir_output / fn_out
+    with open(fn_out_full, 'w') as json_file:
+        json.dump(dict_final, json_file)

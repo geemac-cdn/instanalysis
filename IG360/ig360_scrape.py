@@ -1,7 +1,9 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 from .utility_methods.utility_methods import *
 from .utility_methods.json_methods import *
+from .utility_methods.analysis_methods import *
 from random import randint
 import pandas as pd
 
@@ -83,14 +85,13 @@ class IG360Scrape:
         return True
 
 
-    def __pop_scrape(self, scroll_class1, scroll_class2, scrape_element, scrape_class):
+    def __pop_scrape(self, cnt_tab_focus, scrape_element, scrape_class):
         """Scrape all html elements of a specified class from an Instagram pop up window
 
         Scrape all html elements of a specified class from an Instagram pop up window. Designed to be used with followers or users followed.
 
         Args:
-            scroll_class1 (str): Primary class name within element to be targeted for scrolling
-            scroll_class2 (str): Secondary class name within element to be targeted for scrolling
+            cnt_tab_focus (int): number of times to hit the tab key to get focus before attempting to scroll pop-up window
             scrape_element (str): HTML element type to be targeted for scraping
             scrape_class (str): Class name within element to be targeted for scraping
 
@@ -100,11 +101,18 @@ class IG360Scrape:
         popup_list = []
         finished = False
         prev_list_len = 0
+
+        #   process pop up window elements
         while not finished:
             # scroll down
-            self.driver.find_element_by_xpath("//div[@class='{}' or @class='{}']".format(scroll_class1, scroll_class2)).click()
-            time.sleep(randint(1,3))
-            self.driver.find_element_by_tag_name("html").send_keys(Keys.END)
+            tactions = ActionChains(self.driver)
+            tactions.send_keys(Keys.TAB)
+            for i in range (cnt_tab_focus):
+                tactions.perform()
+                time.sleep(1)
+            actions = ActionChains(self.driver)
+            actions.send_keys(Keys.END)
+            actions.perform()
             time.sleep(randint(3,8))
 
             # extract target elements within views, add to list
@@ -120,7 +128,7 @@ class IG360Scrape:
                 return popup_list
             else:
                 prev_list_len = len(popup_list)
-       
+         
 
     @insta_method
     def __nav_user(self, user):
@@ -162,12 +170,13 @@ class IG360Scrape:
         self.driver.find_element_by_xpath("//a[@class='-nal3 ']").click()
         time.sleep(randint(3,6))
 
+   
+
         # capture full list of followers from pop-up window
-        scroll_class1 = '_7UhW9   xLCgt      MMzan   _0PwGv           fDxYl     '
-        scroll_class2 = 'wFPL8 '
+        cnt_tab_focus = 3
         scrape_element = 'a'
         scrape_class = 'FPmhX notranslate  _0imsa '
-        ext_followers = self.__pop_scrape(scroll_class1, scroll_class2, scrape_element, scrape_class)
+        ext_followers = self.__pop_scrape(cnt_tab_focus, scrape_element, scrape_class)
 
         # update profile record
         self.record_follower_list = ext_followers
@@ -188,11 +197,10 @@ class IG360Scrape:
         time.sleep(randint(3,6))
 
         # capture full list of followers from pop-up window
-        scroll_class1 = '_7UhW9   xLCgt      MMzan   _0PwGv           fDxYl     '
-        scroll_class2 = 'wFPL8 '
+        cnt_tab_focus = 4
         scrape_element = 'a'
         scrape_class = 'FPmhX notranslate  _0imsa '
-        ext_following = self.__pop_scrape(scroll_class1, scroll_class2, scrape_element, scrape_class)
+        ext_following = self.__pop_scrape(cnt_tab_focus, scrape_element, scrape_class)
 
         # update profile record
         self.record_following_list = ext_following  
@@ -241,13 +249,14 @@ class IG360Scrape:
 
 
     @insta_method
-    def scrape_post(self, picture_id):
+    def scrape_post(self, picture_id, get_likes=True):
         """Extract details of an instagram post
 
         Extract details of an instagram post
 
         Args:
             url_post (str): URL to direct instagram post
+            get_likes (boolean, optional): Determine whether to scrape likes (time-consuming)
         """       
         # navigate to post URL
         self.__nav_post(picture_id)
@@ -283,36 +292,37 @@ class IG360Scrape:
         post_date = sl_postDate[0].get_attribute("datetime")
 
         # click like button and scrape likes
-        btn_likes = self.driver.find_elements_by_xpath("//button[@class='sqdOP yWX7d     _8A5w5    ']")
-        if len(btn_likes) > 0:
-            btn_likes[0].click()
-            time.sleep(3)
-            self.driver.find_element_by_xpath("//div[@class='_7UhW9   xLCgt      MMzan   _0PwGv           fDxYl     ']").click()
-            time.sleep(3)
-
-            #capture likes until none left
-            ext_like_list = []
-            finished = False
-            cnt_prev_list_len = 0
-            while not finished:
-                #scroll down
-                self.driver.find_element_by_xpath("//div[@class='_7UhW9   xLCgt      MMzan   _0PwGv           fDxYl     ']").click()
-                time.sleep(1)
-                self.driver.find_element_by_tag_name("html").send_keys(Keys.END)
+        ext_like_list = []
+        if get_likes:
+            btn_likes = self.driver.find_elements_by_xpath("//button[@class='sqdOP yWX7d     _8A5w5    ']")
+            if len(btn_likes) > 0:
+                btn_likes[0].click()
                 time.sleep(3)
-                
-                #extract name for every like visible
-                likepack = self.driver.find_elements_by_xpath("//div[@class='                   Igw0E   rBNOH        eGOV_     ybXk5    _4EzTm                                                                                                              ']")
-                ext_like_list.extend(liker.text for liker in likepack)
+                self.driver.find_element_by_xpath("//div[@class='_7UhW9   xLCgt      MMzan   _0PwGv           fDxYl     ']").click()
+                time.sleep(3)
 
-                # clean up duplicates
-                ext_like_list = list(set(ext_like_list))
- 
-                # check if done / refresh
-                if len(ext_like_list) == cnt_prev_list_len:
-                    finished = True
-                else:
-                    cnt_prev_list_len = len(ext_like_list)
+                #capture likes until none left                
+                finished = False
+                cnt_prev_list_len = 0
+                while not finished:
+                    #scroll down
+                    self.driver.find_element_by_xpath("//div[@class='_7UhW9   xLCgt      MMzan   _0PwGv           fDxYl     ']").click()
+                    time.sleep(1)
+                    self.driver.find_element_by_tag_name("html").send_keys(Keys.END)
+                    time.sleep(3)
+                    
+                    #extract name for every like visible
+                    likepack = self.driver.find_elements_by_xpath("//div[@class='                   Igw0E   rBNOH        eGOV_     ybXk5    _4EzTm                                                                                                              ']")
+                    ext_like_list.extend(liker.text for liker in likepack)
+
+                    # clean up duplicates
+                    ext_like_list = list(set(ext_like_list))
+    
+                    # check if done / refresh
+                    if len(ext_like_list) == cnt_prev_list_len:
+                        finished = True
+                    else:
+                        cnt_prev_list_len = len(ext_like_list)
 
         # update post record
         self.record_post = {
@@ -375,6 +385,26 @@ class IG360Scrape:
         self.record_post_list = post_list[:max_pics]
 
 
+    def get_user_lists(self):
+        return util_get_user_lists(self.record_follower_list, self.record_following_list)
+
+
+    def get_user_part_lists(self):
+        return util_get_user_part_lists(self.record_follower_list, self.record_following_list)
+
+
+    def get_posts(self):
+        return util_get_posts(self.record_post_list)
+
+
+    def get_profile_data(self):
+        return util_get_profile_data(self.record_profile)
+
+
+    def get_post_data(self):
+        return util_get_post_data(self.record_post)
+
+
     def json_write_fp(self, tgt_user, dir_output):
         """Write standardized Full Profile (FP) file
 
@@ -406,6 +436,29 @@ class IG360Scrape:
         return util_json_write_ps(tgt_user, dir_output, src_fp_file, post_data, self.code_version)
        
 
+    def util_json_write_mp(self, tgt_user, dir_output, profiles):
+        """Write standardized Multi-Profile (MP) file
+
+        This is a utility function, meant to be called by the instance method json_write_fp.
+        Write standardized Multi-Profile (MP) file.  JSON file will output the following (previously extracted) information -
+            -Base profile data (user name, verification status, numer of posts, number of followers, number followed, full name, description)
+            -Date of user's most recent post
+
+        Args:
+            tgt_user (str): Instagram target account user name
+            dir_output (str): Output directory for JSON files
+            code_version (float): IG360 instance variable.  Code version
+            profiles (list): Profile data records.  (previously extracted) Fields should be as follows -
+                user_name (str)
+                ind_verified (int) 
+                num_posts (int)
+                num_followers (int)
+                num_following (int)
+                full_name (string)
+                description (string)
+                dt_last_post (string: '%Y-%m-%dT%H:%M:%SZ')
+        """
+        util_json_write_mp(tgt_user, dir_output, self.code_version, profiles)
 
 
 # -----------------------------------------------------------
@@ -417,8 +470,8 @@ if __name__ == '__main__':
     config_file_path = 'config.ini'
     config = init_config(config_file_path)
     # login
-    #scraper = IG360Scrape(config)
-    #scraper.login()
+    scraper = IG360Scrape(config)
+    scraper.login()
 
     # scrape a profile
     #scraper.scrape_profile("alsaydali")
@@ -435,7 +488,7 @@ if __name__ == '__main__':
 
     # capture list of followers
     #scraper.scrape_followers('alsaydali')
-    #print("Followers: {}".format(scraper.record_follower_list))
+    #print("Followers: {}".format(scraper.record_follower_list)) 
 
     #capture list of following
     #scraper.scrape_following('alsaydali')
