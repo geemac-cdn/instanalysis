@@ -168,7 +168,7 @@ class IG360Scrape:
         # navigate to user's profile page, click on followers link
         self.__nav_user(user)
         self.driver.find_element_by_xpath("//a[@class='-nal3 ']").click()
-        time.sleep(randint(3,6))
+        time.sleep(randint(7,10))
 
    
 
@@ -194,7 +194,7 @@ class IG360Scrape:
         # navigate to user's profile page, click on followers link
         self.__nav_user(user)
         self.driver.find_elements_by_xpath("//a[@class='-nal3 ']")[1].click()
-        time.sleep(randint(3,6))
+        time.sleep(randint(7,10))
 
         # capture full list of followers from pop-up window
         cnt_tab_focus = 4
@@ -297,9 +297,9 @@ class IG360Scrape:
             btn_likes = self.driver.find_elements_by_xpath("//button[@class='sqdOP yWX7d     _8A5w5    ']")
             if len(btn_likes) > 0:
                 btn_likes[0].click()
-                time.sleep(3)
+                time.sleep(randint(7,10))
                 self.driver.find_element_by_xpath("//div[@class='_7UhW9   xLCgt      MMzan   _0PwGv           fDxYl     ']").click()
-                time.sleep(3)
+                time.sleep(randint(7,10))
 
                 #capture likes until none left                
                 finished = False
@@ -370,19 +370,22 @@ class IG360Scrape:
                         txtNewURL = img.find_element_by_tag_name("a").get_attribute('href')
                         if txtNewURL not in post_list:
                             post_list.append(txtNewURL)
+            print("List so far: {}".format(post_list))
 
             # check if done / refresh
-            if len(post_list) > max_pics:
+            if len(post_list) >= max_pics:
                 finished = True
             if finished == False:
-                if len(post_list) == prev_list_len:
+                if len(post_list) <= prev_list_len:
                     finished = True
-                    return post_list
                 else:
                     prev_list_len = len(post_list)
 
         # update post list record
-        self.record_post_list = post_list[:max_pics]
+        if len(post_list) < max_pics:
+            self.record_post_list = post_list
+        else: 
+            self.record_post_list = post_list[:max_pics]
 
 
     def get_user_lists(self):
@@ -482,7 +485,7 @@ if __name__ == '__main__':
     #print(scraper.record_post)
 
     # get list of posts to process
-    #scraper.scrape_post_list("tonyrobbins", 2)
+    #scraper.scrape_post_list("ghost.acolyte.v2", 2)
     #print("Posts Found: {}".format(scraper.record_post_list))
     #print("Num Posts: {}".format(len(scraper.record_post_list)))
 
