@@ -32,12 +32,14 @@ class IG360Scrape:
             self.password = config['IG_AUTH']['PASSWORD']
         
         # set other attributes
-        self.code_version = 0.85
+        self.code_version = 0.9
+        self.simple_stopwords = ['a', 'the', 'if', 'then', 'what', 'where', 'why', 'who', 'who', 'whom']
         self.url_login = config['IG_URLS']['URL_LOGIN']
         self.url_post = config['IG_URLS']['URL_POST']
         self.url_user = config['IG_URLS']['URL_USER']
         self.url_tag = config['IG_URLS']['URL_TAG']
-        self.driver = webdriver.Chrome(config['ENVIRONMENT']['CHROMEDRIVER_PATH'])
+        self.selenium_driver_path = config['ENVIRONMENT']['CHROMEDRIVER_PATH']
+        #self.driver = webdriver.Chrome(config['ENVIRONMENT']['CHROMEDRIVER_PATH'])
         self.logged_in = False
         self.record_profile = dict()
         self.record_post = dict()
@@ -53,6 +55,7 @@ class IG360Scrape:
         Logs into Instgram using the credentials specified when the IG360 object was created
         """
         # open url
+        self.driver = webdriver.Chrome(self.selenium_driver_path)
         self.driver.get(self.url_login)
         time.sleep(5)
 
@@ -406,6 +409,22 @@ class IG360Scrape:
 
     def get_post_data(self):
         return util_get_post_data(self.record_post)
+
+
+    def parse_post(self, raw_post):
+        """Parse post data 
+
+        Parse post data to extract summary and detail information -
+            -Total number of words in the post
+            -Number of non-hashtag words
+            -Number of unique non-hashtag words
+            -List of non-hashtag words that appear in post
+            -List of instagram accounts that commented in post
+
+        Args:
+            raw_post (str): Instagram post contents (as extracted by method scrape_post)
+        """
+        return util_parse_post(raw_post, self.simple_stopwords)
 
 
     def json_write_fp(self, tgt_user, dir_output):
