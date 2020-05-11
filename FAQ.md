@@ -40,48 +40,6 @@ To be pefectly safe -
 <li>Login with an unimportant account</li>
 </ul>
 
-### What am I supposed to do with these JSON files?
-Right now the notebooks generate two types of files -
-<ol>
-<li>Full profile for a single account (these start with "fp_")</li>
-<li>Details for multiple posts belongning to an account (these start with "ps_")</li>
-</ol>
-
-For now I've been processing / testing output in Apache Spark by way of Databricks.  If you have a free Databricks account, try the following code to load a profile JSON - <br>
-
-```
-fn_fp = '(put your fp JSON filename here)'
-
-df_fp = spark.read.json('/FileStore/tables/' + fn_fp)
-display(df_fp.head(5))
-```
-The post files contain nested JSON data and require a little more processing -
-
-```
-fn_ps = 'ps_miikanajewels_202004072122.json'
-
-from pyspark.sql.functions import col, explode, from_json, length, substring
-from pyspark.sql.functions import monotonically_increasing_id, get_json_object, when, expr
-from pyspark.sql.types import TimestampType, IntegerType
-
-df_ps = spark.read.json('/FileStore/tables/' + fn_ps)
-
-df_raw_posts = df_ps \
-  .select(col("posts")) \
-  .withColumn("posts2", explode(col("posts"))) \
-  .withColumn("row_id", monotonically_increasing_id()) \
-  .withColumn("posts3", when(col("row_id")==0, col("posts2")).otherwise( expr("substring(posts2, 2, length(posts2)-2)") )) \
-  .select(get_json_object(col("posts3"), "$.picture_id").alias("picture_id"),
-    get_json_object(col("posts3"), "$.post_date").cast(TimestampType()).alias("post_dt"),
-    get_json_object(col("posts3"), "$.poster").alias("poster"),
-    get_json_object(col("posts3"), "$.location").alias("location"),
-    get_json_object(col("posts3"), "$.likes").cast(IntegerType()).alias("likes"),
-    get_json_object(col("posts3"), "$.post").alias("post"),
-    get_json_object(col("posts3"), "$.like_list").alias("like_list")
-  )
-display(df_raw_posts.head(5))
-```
-Full JSON specification and sample notebooks (without Spark) will eventually be added.
 
 ## Future Plans
 
@@ -95,4 +53,5 @@ just for frequent activity, so it would not be responsible to promote activity t
 ### Are you going to add more notebook examples?
 Yes
 
-
+### Are you willing to take suggestions?
+Absolutely

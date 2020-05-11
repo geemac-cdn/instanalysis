@@ -39,7 +39,6 @@ class IG360Scrape:
         self.url_user = config['IG_URLS']['URL_USER']
         self.url_tag = config['IG_URLS']['URL_TAG']
         self.selenium_driver_path = config['ENVIRONMENT']['CHROMEDRIVER_PATH']
-        #self.driver = webdriver.Chrome(config['ENVIRONMENT']['CHROMEDRIVER_PATH'])
         self.logged_in = False
         self.record_profile = dict()
         self.record_post = dict()
@@ -222,13 +221,13 @@ class IG360Scrape:
         self.__nav_user(user)
         
         # find elements
-        txt_user_name = self.driver.find_element_by_xpath('//h2[@class="_7UhW9       fKFbl yUEEX   KV-D4            fDxYl     "]')
+        txt_user_name = self.driver.find_element_by_xpath('//*[@class="_7UhW9       fKFbl yUEEX   KV-D4            fDxYl     "]')
         txt_verified = self.driver.find_elements_by_xpath('//*[@title="Verified"]')
         txt_posts = self.driver.find_elements_by_xpath('//span[@class="g47SY "]')[0]
         txt_followers = self.driver.find_elements_by_xpath('//span[@class="g47SY "]')[1]
         txt_following = self.driver.find_elements_by_xpath('//span[@class="g47SY "]')[2]
-        txt_full_name = self.driver.find_element_by_xpath('//h1[@class="rhpdm"]')
-        txt_description = self.driver.find_element_by_xpath('//div[@class="-vDIg"]/span')
+        txt_full_name = self.driver.find_elements_by_xpath('//h1[@class="rhpdm"]')
+        txt_description = self.driver.find_elements_by_xpath('//div[@class="-vDIg"]/span')
 
         # extract text values
         ext_user_name = txt_user_name.text
@@ -236,8 +235,14 @@ class IG360Scrape:
         ext_posts = int(txt_posts.text.replace(',',''))
         ext_followers = int(txt_followers.get_attribute("title").replace(',',''))
         ext_following = int(txt_following.text.replace(',',''))
-        ext_full_name = txt_full_name.text
-        ext_description = txt_description.text
+        if len(txt_full_name) > 0:
+            ext_full_name = txt_full_name[0].text
+        else:
+            ext_full_name = ''
+        if len(txt_description) > 0:
+            ext_description = txt_description[0].text
+        else:
+            ext_description = ''     
 
         # Update profile record
         self.record_profile = {
@@ -373,7 +378,6 @@ class IG360Scrape:
                         txtNewURL = img.find_element_by_tag_name("a").get_attribute('href')
                         if txtNewURL not in post_list:
                             post_list.append(txtNewURL)
-            print("List so far: {}".format(post_list))
 
             # check if done / refresh
             if len(post_list) >= max_pics:

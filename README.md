@@ -1,7 +1,7 @@
 # instanalysis
 aka "Instagram Analysis"
 <br>
-A Python-based data extraction suite for Instagram profiles.  Use this tool to gather information on Instagram profiles, likes on posts and follower/following lists.  Outputs to JSON files for analysis using Pandas, Spark, etc.
+A Python-based data extraction and analysis suite for Instagram profiles.  Use this tool to gather information on Instagram profiles, likes on posts and follower/following lists.  Outputs to JSON files for analysis using Pandas, Spark, etc.
 ## Getting Started
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 ### Prerequisites
@@ -78,8 +78,10 @@ Check the output directory you defined.  A JSON file should be generated.  Open 
 
 ## To Do List
 <ol>
-  <li>Add notebooks to analyze JSON output (currently testing in Databricks.  Please message me if you'd like it now)</li>
-  <li>Create notebook for end-to-end workflow (data extraction, analysis, output) </li>
+  <li>Add more campaigns to find accounts for engagement</li>
+  <li>Add versioning</li>
+    <li>Integration with other analytical frameworks</li>
+    <li>Code versioning</li>
   <li>Add processing for videos (currently they are skipped)</li>
 </ol>
 
