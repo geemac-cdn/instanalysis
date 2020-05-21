@@ -87,7 +87,8 @@ class IG360Scrape:
         return True
 
 
-    def __pop_scrape(self, cnt_tab_focus, scrape_element, scrape_class):
+
+    def __pop_scrape(self, cnt_tab_focus, scrape_element, scrape_class, scrape_subdiv='', scrape_extract='text'):
         """Scrape all html elements of a specified class from an Instagram pop up window
 
         Scrape all html elements of a specified class from an Instagram pop up window. Designed to be used with followers or users followed.
@@ -118,8 +119,8 @@ class IG360Scrape:
             time.sleep(randint(3,8))
 
             # extract target elements within views, add to list
-            new_elements = self.driver.find_elements_by_xpath("//{}[@class='{}']".format(scrape_element, scrape_class))
-            popup_list.extend(i.text for i in new_elements)
+            new_elements = self.driver.find_elements_by_xpath("//{}[@class='{}']{}".format(scrape_element, scrape_class, scrape_subdiv))
+            eval("popup_list.extend(i." + scrape_extract + " for i in new_elements)")
 
             # de-duplicate target list
             popup_list = list(set(popup_list))
@@ -130,7 +131,7 @@ class IG360Scrape:
                 return popup_list
             else:
                 prev_list_len = len(popup_list)
-         
+
 
     @insta_method
     def __nav_user(self, user):
@@ -141,8 +142,18 @@ class IG360Scrape:
         Args:
             user (str): Instagram account user name
         """
-        self.driver.get(self.url_user.format(user))
-        time.sleep(randint(5,8))
+        loaded = False
+        while loaded == False:
+            self.driver.get(self.url_user.format(user))
+            txt_404 = self.driver.find_elements_by_xpath('//*[@class=" p-error dialog-404"]')
+            if len(txt_404) == 0:
+                loaded = True
+                time.sleep(randint(5,8))
+            else:
+                wait_time = randint(600,900)
+                print("404 Returned. Waiting {} seconds...".format(wait_time))
+                time.sleep(wait_time)
+
 
 
     @insta_method
@@ -154,8 +165,18 @@ class IG360Scrape:
         Args:
             picture_id (str): Intagram Post ID
         """
-        self.driver.get(self.url_post.format(picture_id))
-        time.sleep(randint(3,5))
+        loaded = False
+        while loaded == False:
+            self.driver.get(self.url_post.format(picture_id))
+            txt_404 = self.driver.find_elements_by_xpath('//*[@class=" p-error dialog-404"]')
+            if len(txt_404) == 0:
+                loaded = True
+                time.sleep(randint(5,8))
+            else:
+                wait_time = randint(600,900)
+                print("404 Returned. Waiting {} seconds...".format(wait_time))
+                
+                time.sleep(wait_time)
 
 
     @insta_method
@@ -221,7 +242,7 @@ class IG360Scrape:
         self.__nav_user(user)
         
         # find elements
-        txt_user_name = self.driver.find_element_by_xpath('//*[@class="_7UhW9       fKFbl yUEEX   KV-D4            fDxYl     "]')
+        txt_user_name = self.driver.find_element_by_xpath('//*[@class="_7UhW9       fKFbl yUEEX   KV-D4             fDxYl     "]')
         txt_verified = self.driver.find_elements_by_xpath('//*[@title="Verified"]')
         txt_posts = self.driver.find_elements_by_xpath('//span[@class="g47SY "]')[0]
         txt_followers = self.driver.find_elements_by_xpath('//span[@class="g47SY "]')[1]
@@ -306,31 +327,14 @@ class IG360Scrape:
             if len(btn_likes) > 0:
                 btn_likes[0].click()
                 time.sleep(randint(7,10))
-                self.driver.find_element_by_xpath("//div[@class='_7UhW9   xLCgt      MMzan   _0PwGv           fDxYl     ']").click()
-                time.sleep(randint(7,10))
 
-                #capture likes until none left                
-                finished = False
-                cnt_prev_list_len = 0
-                while not finished:
-                    #scroll down
-                    self.driver.find_element_by_xpath("//div[@class='_7UhW9   xLCgt      MMzan   _0PwGv           fDxYl     ']").click()
-                    time.sleep(1)
-                    self.driver.find_element_by_tag_name("html").send_keys(Keys.END)
-                    time.sleep(3)
-                    
-                    #extract name for every like visible
-                    likepack = self.driver.find_elements_by_xpath("//div[@class='                   Igw0E   rBNOH        eGOV_     ybXk5    _4EzTm                                                                                                              ']")
-                    ext_like_list.extend(liker.text for liker in likepack)
-
-                    # clean up duplicates
-                    ext_like_list = list(set(ext_like_list))
-    
-                    # check if done / refresh
-                    if len(ext_like_list) == cnt_prev_list_len:
-                        finished = True
-                    else:
-                        cnt_prev_list_len = len(ext_like_list)
+                # capture full list of followers from pop-up window
+                cnt_tab_focus = 2
+                scrape_element = 'div'
+                scrape_class = '_7UhW9   xLCgt      MMzan  KV-D4             fDxYl     '
+                scrape_subdiv = '/a'
+                scrape_extract = "get_attribute('title')"
+                ext_like_list = self.__pop_scrape(cnt_tab_focus, scrape_element, scrape_class, scrape_subdiv, scrape_extract)
 
         # update post record
         self.record_post = {
@@ -504,19 +508,18 @@ if __name__ == '__main__':
     #print(scraper.record_profile)
 
     # scrape a post
-    #scraper.scrape_post('B9ZPklXht6f')
-    #print(scraper.record_post)
-
+    scraper.scrape_post('B9o71NFB3sN')
+    print("{}".format(scraper.record_post))
+ 
     # get list of posts to process
     #scraper.scrape_post_list("ghost.acolyte.v2", 2)
     #print("Posts Found: {}".format(scraper.record_post_list))
     #print("Num Posts: {}".format(len(scraper.record_post_list)))
 
     # capture list of followers
-    #scraper.scrape_followers('alsaydali')
-    #print("Followers: {}".format(scraper.record_follower_list)) 
+    scraper.scrape_followers('alsaydali')
+    print("Followers: {}".format(scraper.record_follower_list)) 
 
     #capture list of following
     #scraper.scrape_following('alsaydali')
     #print("Following: {}".format(scraper.record_following_list))
-   
